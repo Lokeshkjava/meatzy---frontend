@@ -10,10 +10,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Connect to the Cloud Function
-// const functions = firebase.functions();
-// const placeOrderFunction = functions.httpsCallable("placeOrder");
-
 /* =====================================================
    MEATZY PRODUCTS
 ===================================================== */
