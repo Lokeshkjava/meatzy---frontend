@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MEATZY Fresh Meat | Online Ordering</title>
+
+    <link rel="stylesheet" href="Meat1.css">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="header">
+
+    <a class="logo" href="#home">
+        MEATZY <span>FRESH MEAT</span>
+    </a>
+
+    <nav class="nav" id="nav">
+        <a href="#home">Home</a>
+        <a href="#categories">Categories</a>
+        <a href="#shop">Shop</a>
+        <a href="#protein">Gym Protein</a>
+        <a href="#offers">Offers</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+
+        <button class="icon-btn" id="menuBtn">
+            ☰
+        </button>
+
+        <button class="cart-btn" id="cartBtn">
+            🛒 <span>Cart</span>
+            <b id="cartCount">0</b>
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- ================= MAIN ================= -->
+
+<main>
+
+
+<!-- ================= HERO ================= -->
+
+<section class="hero" id="home">
+
+    <div class="hero-content">
+
+        <p class="eyebrow">
+            FRESH • HYGIENIC • FAST DELIVERY
+        </p>
+
+        <h1>
+            Fresh meat.
+            <br>
+            <span>Delivered fresh.</span>
+        </h1>
+
+        <p class="hero-description">
+            Premium chicken, mutton, desi chicken and eggs —
+            cleaned, hygienically packed and delivered to your doorstep.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="#shop" class="btn primary">
+                ORDER NOW
+            </a>
+
+            <a href="#categories" class="btn secondary">
+                VIEW CATEGORIES
+            </a>
+
+        </div>
+
+        <div class="hero-points">
+
+            <span>✓ Freshly packed</span>
+            <span>✓ Hygienic handling</span>
+            <span>✓ Doorstep delivery</span>
+
+        </div>
+
+    </div>
+
+
+    <!-- HERO IMAGE -->
+
+    <div class="hero-card">
+
+        <div class="hero-image">
+
+            <img
+                src="Raw chicken.jpg"
+                alt="Fresh Chicken"
+            >
+
+        </div>
+
+        <div class="hero-card-content">
+
+            <strong>MEATZY</strong>
+
+            <small>
+                Freshness you can trust
+            </small>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= CATEGORIES ================= -->
+
+<section class="section" id="categories">
+
+    <div class="section-heading">
+
+        <div>
+
+            <p class="eyebrow dark">
+                SHOP BY CATEGORY
+            </p>
+
+            <h2>
+                Choose your favourite
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="category-grid">
+
+
+        <!-- CHICKEN -->
+
+        <button
+            class="category-card"
+            data-filter="Chicken"
+        >
+
+            <div class="category-image">
+
+                <img
+                    src="Raw chicken.jpg"
+                    alt="Chicken"
+                >
+
+            </div>
+
+            <h3>
+                Chicken
+            </h3>
+
+            <p>
+                Fresh cuts & boneless
+            </p>
+
+        </button>
+
+
+        <!-- MUTTON -->
+
+        <button
+            class="category-card"
+            data-filter="Mutton"
+        >
+
+            <div class="category-image">
+
+                <img
+                    src="Raw Mutton.avif"
+                    alt="Mutton"
+                >
+
+            </div>
+
+            <h3>
+                Mutton
+            </h3>
+
+            <p>
+                Premium fresh mutton
+            </p>
+
+        </button>
+
+
+        <!-- DESI CHICKEN -->
+
+        <button
+            class="category-card"
+            data-filter="Desi Chicken"
+        >
+
+            <div class="category-image">
+
+                <img
+                    src="Desi Chicken.webp"
+                    alt="Desi Chicken"
+                >
+
+            </div>
+
+            <h3>
+                Desi Chicken
+            </h3>
+
+            <p>
+                Country chicken
+            </p>
+
+        </button>
+
+
+        <!-- EGGS -->
+
+        <button
+            class="category-card"
+            data-filter="Eggs"
+        >
+
+            <div class="category-image">
+
+                <img
+                    src="Eggs Tray.jpeg"
+                    alt="Eggs"
+                >
+
+            </div>
+
+            <h3>
+                Eggs
+            </h3>
+
+            <p>
+                Fresh egg trays
+            </p>
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= SHOP ================= -->
+
+<section
+    class="section shop-section"
+    id="shop"
+>
+
+    <div class="section-heading">
+
+        <div>
+
+            <p class="eyebrow dark">
+                MEATZY SHOP
+            </p>
+
+            <h2>
+                Fresh products
+            </h2>
+
+            <p>
+                Select the quantity you want and add it to your cart.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTERS -->
+
+    <div
+        class="filters"
+        id="filters"
+    ></div>
+
+
+    <!-- PRODUCTS -->
+
+    <div
+        class="product-grid"
+        id="products"
+    ></div>
+
+</section>
+
+
+<!-- ================= GYM PROTEIN ================= -->
+
+<section
+    class="protein-section"
+    id="protein"
+>
+
+    <div class="protein-content">
+
+        <div class="protein-text">
+
+            <p class="eyebrow">
+                MEATZY FITNESS
+            </p>
+
+            <h2>
+                Gym Protein Chicken
+            </h2>
+
+            <p>
+                Looking for a high-protein meal?
+                Select your chicken quantity and see the
+                estimated protein before ordering.
+            </p>
+
+            <div class="protein-benefits">
+
+                <span>✓ High protein</span>
+                <span>✓ Fresh chicken</span>
+                <span>✓ Doorstep delivery</span>
+
+            </div>
+
+        </div>
+
+
+        <div class="protein-card">
+
+            <div class="protein-image">
+
+                <img
+                    src="Chicken breast.webp"
+                    alt="Chicken Breast"
+                >
+
+            </div>
+
+
+            <div class="protein-card-body">
+
+                <h3>
+                    Chicken Breast
+                </h3>
+
+                <p class="protein-info">
+                    Approx. 27g protein per 100g raw chicken breast.
+                </p>
+
+
+                <label for="proteinWeight">
+                    Select quantity
+                </label>
+
+                <select id="proteinWeight">
+
+                    <option value="250">
+                        250 grams
+                    </option>
+
+                    <option value="500">
+                        500 grams
+                    </option>
+
+                    <option value="750">
+                        750 grams
+                    </option>
+
+                    <option value="1000">
+                        1 kilogram
+                    </option>
+
+                </select>
+
+
+                <div
+                    class="protein-result"
+                    id="proteinResult"
+                >
+                    250g chicken ≈ 68g protein
+                </div>
+
+
+                <button
+                    class="btn primary full"
+                    id="proteinOrderBtn"
+                >
+                    ORDER PROTEIN CHICKEN
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= OFFER ================= -->
+
+<section
+    class="offer"
+    id="offers"
+>
+
+    <div>
+
+        <p class="eyebrow">
+            MEATZY OFFERS
+        </p>
+
+        <h2>
+            Freshness at a fair price.
+        </h2>
+
+        <p>
+            Fresh meat, hygienic packing and convenient
+            doorstep delivery.
+        </p>
+
+    </div>
+
+    <a
+        href="#shop"
+        class="btn primary"
+    >
+        SHOP NOW
+    </a>
+
+</section>
+
+
+<!-- ================= ABOUT ================= -->
+
+<section
+    class="section about"
+    id="about"
+>
+
+    <p class="eyebrow dark">
+        WHY MEATZY
+    </p>
+
+    <h2>
+        Fresh • Hygienic • Fast
+    </h2>
+
+
+    <div class="feature-grid">
+
+        <div>
+
+            <span>
+                01
+            </span>
+
+            <h3>
+                Fresh sourcing
+            </h3>
+
+            <p>
+                Products are prepared for your order
+                with freshness as the priority.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                02
+            </span>
+
+            <h3>
+                Hygienic packing
+            </h3>
+
+            <p>
+                Orders are packed carefully and prepared
+                for doorstep delivery.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                03
+            </span>
+
+            <h3>
+                Local delivery
+            </h3>
+
+            <p>
+                Fresh meat delivered conveniently to
+                your doorstep.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= CONTACT ================= -->
+
+<section
+    class="contact section"
+    id="contact"
+>
+
+    <div>
+
+        <p class="eyebrow dark">
+            CONTACT
+        </p>
+
+        <h2>
+            Order from MEATZY
+        </h2>
+
+        <p>
+            For direct business enquiries, delivery questions
+            and support, contact your MEATZY team.
+        </p>
+
+    </div>
+
+
+    <a
+        class="btn primary"
+        href="tel:+910000000000"
+    >
+        CALL MEATZY
+    </a>
+
+</section>
+
+</main>
+
+
+<!-- ================= OVERLAY ================= -->
+
+<div
+    class="overlay"
+    id="overlay"
+></div>
+
+
+<!-- ================= CART ================= -->
+
+<aside
+    class="cart-drawer"
+    id="cartDrawer"
+>
+
+    <div class="drawer-head">
+
+        <h2>
+            Your Cart
+        </h2>
+
+        <button id="closeCart">
+            ×
+        </button>
+
+    </div>
+
+
+    <div
+        id="cartItems"
+        class="cart-items"
+    ></div>
+
+
+    <div class="cart-bottom">
+
+        <div class="total-row">
+
+            <span>
+                Total
+            </span>
+
+            <strong>
+                ₹<span id="cartTotal">0</span>
+            </strong>
+
+        </div>
+
+
+        <button
+            class="btn primary full"
+            id="checkoutBtn"
+        >
+            CHECKOUT
+        </button>
+
+    </div>
+
+</aside>
+
+
+<!-- ================= CHECKOUT MODAL ================= -->
+
+<div
+    class="modal"
+    id="checkoutModal"
+>
+
+    <div class="modal-box">
+
+        <button
+            class="modal-close"
+            id="closeCheckout"
+        >
+            ×
+        </button>
+
+        <p class="eyebrow dark">
+            CHECKOUT
+        </p>
+
+        <h2>
+            Delivery details
+        </h2>
+
+
+        <form id="checkoutForm">
+
+            <label>
+                Name
+
+                <input
+                    id="customerName"
+                    required
+                    placeholder="Your full name"
+                >
+
+            </label>
+
+
+            <label>
+                Mobile number
+
+                <input
+                    id="customerPhone"
+                    required
+                    inputmode="numeric"
+                    maxlength="10"
+                    placeholder="10-digit mobile number"
+                >
+
+            </label>
+
+
+            <label>
+                Delivery address
+
+                <textarea
+                    id="customerAddress"
+                    required
+                    rows="3"
+                    placeholder="House / Flat, street, area"
+                ></textarea>
+
+            </label>
+
+
+            <label>
+                Delivery slot
+
+                <select id="deliverySlot">
+
+                    <option>
+                        As soon as possible
+                    </option>
+
+                    <option>
+                        30–60 minutes
+                    </option>
+
+                    <option>
+                        Choose later
+                    </option>
+
+                </select>
+
+            </label>
+
+
+            <div class="payment-note">
+
+                Payment gateway will be connected
+                in the backend phase.
+
+            </div>
+
+
+            <button
+                class="btn primary full"
+                type="submit"
+            >
+                PLACE ORDER
+            </button>
+
+        </form>
+
+
+        <p
+            id="orderMessage"
+            class="order-message"
+        ></p>
+
+    </div>
+
+</div>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
+
+    <div>
+
+        <strong>
+            MEATZY FRESH MEAT
+        </strong>
+
+        <p>
+            FRESH • HYGIENIC • FAST DELIVERY
+        </p>
+
+    </div>
+
+
+    <p>
+        © <span id="year"></span>
+        MEATZY. All rights reserved.
+    </p>
+
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+<!-- <script>
+const firebaseConfig = {
+    apiKey: "AIzaSyCGw4N7bk3-c45lK9S9XnfsIV_T0z-6Das",
+    authDomain: "meatzy-1d3c6.firebaseapp.com",
+    projectId: "meatzy-1d3c6",
+    storageBucket: "meatzy-1d3c6.firebasestorage.app",
+    messagingSenderId: "880492865945",
+    appId: "1:880492865945:web:8190153cdaf2c1848ccb08",
+    measurementId: "G-S85L7FZ4D7"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+</script> -->
+
+<script src="Meats1.js"></script>
+
+</body>
+
+</html>
