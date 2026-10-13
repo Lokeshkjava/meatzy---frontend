@@ -972,88 +972,61 @@ const items = Object.values(cart).map((cartItem) => {
 
                 theme: { color: "#d8aa50" },
 
-                handler: async function (paymentResponse) {
-                    orderMessage.textContent = "Verifying payment...";
+              
+handler: async function (paymentResponse) {
+    submitButton.disabled = true;
+    orderMessage.textContent = "Verifying payment...";
 
-                    try {
-                        const verifyResponse = await fetch(
-                            `${API_BASE}/api/payments/verify`,
-                            {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({
-                                    orderId: order.orderId,
-                                    razorpay_order_id:
-                                        paymentResponse.razorpay_order_id,
-                                    razorpay_payment_id:
-                                        paymentResponse.razorpay_payment_id,
-                                    razorpay_signature:
-                                        paymentResponse.razorpay_signature
-                                })
-                            }
-                        );
-
-                        const verification = await verifyResponse.json();
-
-                        if (!verifyResponse.ok || !verification.success) {
-                            throw new Error(
-                                verification.error || "Payment verification failed."
-                            );
-                        }
-
-                        orderMessage.textContent =
-                            `Payment successful! Order ${verification.orderNumber} confirmed.`;
-
-                        cart = {};
-                        saveCart();
-                        renderCart();
-                        form.reset();
-
-                    } catch (error) {
-                        console.error("Payment verification error:", error);
-                        orderMessage.textContent =
-                            "Payment was submitted, but confirmation is pending. " +
-                            "Do not pay again immediately. Contact MEATZY support " +
-                            `with order number ${order.orderNumber}.`;
-                    } finally {
-                        submitButton.disabled = false;
-                    }
+    try {
+        const verifyResponse = await fetch(
+            `${API_BASE}/api/payments/verify`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
                 },
+                body: JSON.stringify({
+                    orderId: order.orderId,
+                    razorpay_order_id: paymentResponse.razorpay_order_id,
+                    razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                    razorpay_signature: paymentResponse.razorpay_signature
+                })
+            }
+        );
 
-                modal: {
-                    ondismiss: function () {
-                        orderMessage.textContent =
-                            "Payment window closed. Your cart is still available.";
-                        submitButton.disabled = false;
-                    }
-                }
-            };
+        const verification = await verifyResponse.json();
 
-            const razorpay = new window.Razorpay(options);
-
-            razorpay.on("payment.failed", function (response) {
-                console.error(
-                    "Razorpay payment failed:",
-                    response.error?.description
-                );
-
-                orderMessage.textContent =
-                    "Payment failed. Your cart is still available. Please try again.";
-
-                submitButton.disabled = false;
-            });
-
-            razorpay.open();
-
-        } catch (error) {
-            console.error("Checkout error:", error);
-            orderMessage.textContent =
-                error.message || "Something went wrong. Please try again.";
-            submitButton.disabled = false;
+        if (!verifyResponse.ok || !verification.success) {
+            throw new Error(
+                verification.error || "Payment verification failed."
+            );
         }
-    });
+
+        // Close Razorpay checkout after successful verification.
+        razorpay.close();
+
+        orderMessage.textContent =
+            `Payment successful! Order ${verification.orderNumber} confirmed.`;
+
+        // Clear and redraw the cart.
+        cart = {};
+        saveCart();
+        renderCart();
+        form.reset();
+
+        // Close your checkout modal here if it has a close function.
+        // Example: closeCheckoutModal();
+
+    } catch (error) {
+        console.error("Payment verification error:", error);
+        orderMessage.textContent =
+            "Payment confirmation is pending. Do not pay again. " +
+            "Please check your order or contact MEATZY support. " +
+            `Reference: ${order.orderNumber || order.orderId}`;
+    } finally {
+        submitButton.disabled = false;
+    }
+},
 
 /* =====================================================
    MOBILE MENU
