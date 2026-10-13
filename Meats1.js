@@ -1240,3 +1240,31 @@ render();
 renderCart();
 
 calculateProtein();
+
+/*==========================================================
+WHATS APP ORDER
+=========================================================*/
+
+
+const MEATZY_WHATSAPP = "919059781224";
+
+function shareOrderOnWhatsApp(order) {
+  // Call this only after the server confirms the order.
+  const lines = [
+    "MEATZY FRESH MEAT",
+    `Order: ${order.orderNumber}`,
+    `Payment: ${order.paymentStatus}`,
+    ...order.items.map(item =>
+      `${item.productName} x ${item.quantity} — ₹${item.lineTotal}`
+    ),
+    `Total: ₹${order.total}`,
+    "",
+    "Please confirm my order."
+  ];
+
+  const url =
+    `https://wa.me/${MEATZY_WHATSAPP}?text=` +
+    encodeURIComponent(lines.join("\n"));
+
+  window.open(url, "_blank", "noopener,noreferrer");
+}
