@@ -862,15 +862,23 @@ document
         }
 
         // Convert the cart object into the API's expected array
-        const items = Object.entries(cart).map(([i, q]) => {
-    const p = products[i];
+      const items = Object.values(cart).map((cartItem) => {
+            const product = products.find(
+                p => p.id === Number(cartItem.productId)
+            );
 
-    return {
-  productName: "Chicken Curry Cut",
-  quantity: 500,
-  count: 1
-};
-});
+            if (!product) {
+                throw new Error("A product in your cart could not be found. Please refresh and add it again.");
+            }
+
+            return {
+                productName: product.name === "Eggs"
+                    ? "Eggs Tray"
+                    : product.name,
+                quantity: Number(cartItem.quantity),
+                count: Number(cartItem.count)
+            };
+        });
 
         submitButton.disabled = true;
 
