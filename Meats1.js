@@ -905,15 +905,29 @@ const items = Object.values(cart).map((cartItem) => {
                     throw new Error(result.error || "Unable to place order.");
                 }
 
-                orderMessage.textContent =
-                    `Order ${result.orderNumber} placed successfully. ` +
-                    `Total: ₹${result.total}. Payment: Cash on Delivery.`;
+              
+const successMessage =
+    `Order ${result.orderNumber} placed successfully. ` +
+    `Total: ₹${result.total}. Payment: Cash on Delivery.`;
 
-                cart = {};
-                saveCart();
-                renderCart();
-                form.reset();
-                return;
+            orderMessage.textContent = successMessage;
+            
+            // Clear the cart and update the display.
+            cart = {};
+            saveCart();
+            renderCart();
+            
+            // Reset checkout fields.
+            form.reset();
+            
+            // Close checkout and cart automatically.
+            checkoutModal.classList.remove("show");
+            closeCart();
+            
+            // Show the confirmation after closing the panels.
+            alert(successMessage);
+            
+            return;
             }
 
             if (paymentMethod !== "RAZORPAY") {
