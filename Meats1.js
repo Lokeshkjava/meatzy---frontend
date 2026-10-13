@@ -906,28 +906,15 @@ const items = Object.values(cart).map((cartItem) => {
                 }
 
               
-const successMessage =
-    `Order ${result.orderNumber} placed successfully. ` +
-    `Total: ₹${result.total}. Payment: Cash on Delivery.`;
+orderMessage.textContent =
+                    `Order ${result.orderNumber} placed successfully. ` +
+                    Total: ₹${result.total}. Payment: Cash on Delivery.;
 
-            orderMessage.textContent = successMessage;
-            
-            // Clear the cart and update the display.
-            cart = {};
-            saveCart();
-            renderCart();
-            
-            // Reset checkout fields.
-            form.reset();
-            
-            // Close checkout and cart automatically.
-            checkoutModal.classList.remove("show");
-            closeCart();
-            
-            // Show the confirmation after closing the panels.
-            alert(successMessage);
-            
-            return;
+                cart = {};
+                saveCart();
+                renderCart();
+                form.reset();
+                return;
             }
 
             if (paymentMethod !== "RAZORPAY") {
