@@ -866,10 +866,10 @@ document
     const p = products[i];
 
     return {
-        productName: p[0],
-        quantity: 1000,
-        count: q
-    };
+  productName: "Chicken Curry Cut",
+  quantity: 500,
+  count: 1
+};
 });
 
         submitButton.disabled = true;
