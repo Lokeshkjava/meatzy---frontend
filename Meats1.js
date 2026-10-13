@@ -862,23 +862,15 @@ document
         }
 
         // Convert the cart object into the API's expected array
-        const items = cartEntries.map(([cartKey, item]) => {
-            const product = products.find(
-                p => Number(p.id) === Number(item.productId)
-            );
+        const items = Object.entries(cart).map(([i, q]) => {
+    const p = products[i];
 
-            if (!product) {
-                throw new Error("A product in your cart could not be found.");
-            }
-
-            return {
-                productId: product.id,
-                productName: product.name,
-                category: product.category,
-                quantity: Number(item.quantity),
-                count: Number(item.count)
-            };
-        });
+    return {
+        productName: p[0],
+        quantity: 1000,
+        count: q
+    };
+});
 
         submitButton.disabled = true;
 
