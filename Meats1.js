@@ -1037,20 +1037,17 @@ handler: async function (paymentResponse) {
             "Payment confirmation is pending. Do not pay again. " +
             "Please check your order or contact MEATZY support. " +
             `Reference: ${order.orderNumber || order.orderId}`;
-            } finally {
-            submitButton.disabled = false;
-        }
-    },
-
-    modal: {
-        ondismiss: function () {
-            submitButton.disabled = false;
-        }
+               } finally {
+        submitButton.disabled = false;
     }
 };
 
 const razorpay = new window.Razorpay(options);
 razorpay.open();
+
+/* =====================================================
+   MOBILE MENU
+===================================================== */
 
 /* =====================================================
    MOBILE MENU
