@@ -967,7 +967,7 @@ const items = Object.values(cart).map((cartItem) => {
                 throw new Error("The server returned incomplete payment details.");
             }
 
-         const options = {
+     const options = {
     key: order.keyId,
     amount: order.amount,
     currency: order.currency || "INR",
@@ -999,15 +999,20 @@ const items = Object.values(cart).map((cartItem) => {
                 `${API_BASE}/api/payments/verify`,
                 {
                     method: "POST",
+
                     headers: {
                         "Content-Type": "application/json"
                     },
+
                     body: JSON.stringify({
                         orderId: order.orderId,
+
                         razorpay_order_id:
                             paymentResponse.razorpay_order_id,
+
                         razorpay_payment_id:
                             paymentResponse.razorpay_payment_id,
+
                         razorpay_signature:
                             paymentResponse.razorpay_signature
                     })
@@ -1027,13 +1032,15 @@ const items = Object.values(cart).map((cartItem) => {
                 );
             }
 
-            // Payment has been verified by your server.
-            razorpay.close();
+            /*
+             * IMPORTANT:
+             * Only clear the cart after the SERVER
+             * confirms the Razorpay signature.
+             */
 
             orderMessage.textContent =
                 `Payment successful! Order ${verification.orderNumber} confirmed.`;
 
-            // Clear cart only after successful verification.
             cart = {};
 
             saveCart();
@@ -1042,61 +1049,29 @@ const items = Object.values(cart).map((cartItem) => {
 
             form.reset();
 
-            // Close checkout modal after successful payment.
+            /*
+             * Close Razorpay popup
+             */
+            razorpay.close();
+
+            /*
+             * Close checkout modal
+             */
             checkoutModal.classList.remove("show");
 
-            // Optional WhatsApp sharing.
-            const whatsappButton =
-                document.getElementById("whatsappReceiptBtn");
+            /*
+             * Close cart drawer
+             */
+            closeCart();
 
-            if (whatsappButton) {
-
-                whatsappButton.style.display = "block";
-
-                whatsappButton.onclick = function () {
-
-                    shareOrderOnWhatsApp({
-                        orderNumber:
-                            verification.orderNumber,
-
-                        paymentStatus:
-                            verification.paymentStatus ||
-                            "PAID",
-
-                        items: items.map(item => {
-
-                            const product =
-                                products.find(
-                                    p =>
-                                        p.name ===
-                                        item.productName
-                                );
-
-                            const lineTotal =
-                                product
-                                    ? calculatePrice(
-                                        product,
-                                        item.quantity
-                                    ) * item.count
-                                    : 0;
-
-                            return {
-                                productName:
-                                    item.productName,
-                                quantity:
-                                    item.quantity,
-                                lineTotal
-                            };
-
-                        }),
-
-                        total:
-                            verification.total ||
-                            order.total
-                    });
-
-                };
-            }
+            /*
+             * Show confirmation
+             */
+            alert(
+                `Payment successful!\n\n` +
+                `Order: ${verification.orderNumber}\n` +
+                `Total: ₹${verification.total || order.total}`
+            );
 
         } catch (error) {
 
@@ -1105,13 +1080,17 @@ const items = Object.values(cart).map((cartItem) => {
                 error
             );
 
+            /*
+             * DO NOT clear cart.
+             * DO NOT say payment is successful.
+             * Customer should not pay again immediately.
+             */
+
             orderMessage.textContent =
-                "Payment confirmation is pending. Do not pay again. " +
-                "Please check your order or contact MEATZY support. " +
-                `Reference: ${
-                    order.orderNumber ||
-                    order.orderId
-                }`;
+                "Payment confirmation is pending. " +
+                "Do not pay again immediately. " +
+                "Please contact MEATZY support. " +
+                `Reference: ${order.orderNumber || order.orderId}`;
 
         } finally {
 
@@ -1132,15 +1111,22 @@ const items = Object.values(cart).map((cartItem) => {
         }
 
     }
-};
+
+};   // <-- VERY IMPORTANT: closes options
 
 
-// Create Razorpay checkout.
+/*
+ * Create Razorpay checkout
+ */
+
 const razorpay =
     new window.Razorpay(options);
 
 
-// Handle Razorpay payment failure.
+/*
+ * Payment failed
+ */
+
 razorpay.on(
     "payment.failed",
     function (response) {
@@ -1159,7 +1145,10 @@ razorpay.on(
 );
 
 
-// Open Razorpay.
+/*
+ * Open Razorpay
+ */
+
 razorpay.open();
 
 /* =====================================================
