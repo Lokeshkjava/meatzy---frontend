@@ -684,18 +684,6 @@
                     placeholder="House / Flat, street, area"
                 ></textarea>
 
-                <label for="paymentMethod">Payment Method</label>
-
-                        <select id="paymentMethod" name="paymentMethod" required>
-                            <option value="COD">Cash on Delivery</option>
-                            <option value="RAZORPAY">Pay Online (Razorpay)</option>
-                        </select>
-                        
-                        <p class="payment-note">
-                            COD: Pay when your order arrives.
-                            Online: Complete payment securely using Razorpay.
-                        </p>
-
             </label>
 
 
@@ -721,6 +709,14 @@
             </label>
 
 
+            <div class="payment-note">
+
+                Payment gateway will be connected
+                in the backend phase.
+
+            </div>
+
+
             <button
                 class="btn primary full"
                 type="submit"
@@ -739,37 +735,6 @@
     </div>
 
 </div>
-
-
-<!-- Floating WhatsApp contact button -->
-<a
-  href="https://wa.me/919059781224?text=Hello%20MEATZY%2C%20I%20have%20a%20question%20about%20your%20products."
-  target="_blank"
-  rel="noopener noreferrer"
-  class="whatsapp-float"
-  aria-label="Contact MEATZY on WhatsApp"
->
-  WhatsApp Us
-</a>
-
-<style>
-.whatsapp-float {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 1000;
-  background: #168c52;
-  color: white;
-  padding: 14px 20px;
-  border-radius: 30px;
-  font-weight: 700;
-  text-decoration: none;
-  box-shadow: 0 4px 16px #0003;
-}
-.whatsapp-float:hover {
-  background: #116c3e;
-}
-</style>
 
 
 <!-- ================= FOOTER ================= -->
@@ -798,8 +763,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
 
 <!-- <script>
 const firebaseConfig = {
