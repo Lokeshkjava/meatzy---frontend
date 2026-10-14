@@ -967,104 +967,180 @@ const items = Object.values(cart).map((cartItem) => {
                 throw new Error("The server returned incomplete payment details.");
             }
 
-            const options = {
-                key: order.keyId,
-                amount: order.amount,
-                currency: order.currency || "INR",
-                name: "MEATZY Fresh Meat",
-                description: `Order ${order.orderNumber}`,
-                order_id: order.razorpayOrderId,
+         const options = {
+    key: order.keyId,
+    amount: order.amount,
+    currency: order.currency || "INR",
+    name: "MEATZY Fresh Meat",
+    description: `Order ${order.orderNumber}`,
+    order_id: order.razorpayOrderId,
 
-                prefill: {
-                    name: customer.name,
-                    contact: customer.phone
-                },
+    prefill: {
+        name: customer.name,
+        contact: customer.phone
+    },
 
-                notes: {
-                    meatzyOrderNumber: order.orderNumber
-                },
+    notes: {
+        meatzyOrderNumber: order.orderNumber
+    },
 
-                theme: { color: "#d8aa50" },
+    theme: {
+        color: "#d8aa50"
+    },
 
-              
-handler: async function (paymentResponse) {
-    submitButton.disabled = true;
-    orderMessage.textContent = "Verifying payment...";
+    handler: async function (paymentResponse) {
 
-    try {
-        const verifyResponse = await fetch(
-            `${API_BASE}/api/payments/verify`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    orderId: order.orderId,
-                    razorpay_order_id:
-                        paymentResponse.razorpay_order_id,
-                    razorpay_payment_id:
-                        paymentResponse.razorpay_payment_id,
-                    razorpay_signature:
-                        paymentResponse.razorpay_signature
-                })
-            }
-        );
+        submitButton.disabled = true;
+        orderMessage.textContent = "Verifying payment...";
 
-        const verification = await verifyResponse.json();
+        try {
 
-        if (!verifyResponse.ok || !verification.success) {
-            throw new Error(
-                verification.error ||
-                "Payment verification failed."
+            const verifyResponse = await fetch(
+                `${API_BASE}/api/payments/verify`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        orderId: order.orderId,
+                        razorpay_order_id:
+                            paymentResponse.razorpay_order_id,
+                        razorpay_payment_id:
+                            paymentResponse.razorpay_payment_id,
+                        razorpay_signature:
+                            paymentResponse.razorpay_signature
+                    })
+                }
             );
+
+            const verification =
+                await verifyResponse.json();
+
+            if (
+                !verifyResponse.ok ||
+                !verification.success
+            ) {
+                throw new Error(
+                    verification.error ||
+                    "Payment verification failed."
+                );
+            }
+
+            // Payment has been verified by your server.
+            razorpay.close();
+
+            orderMessage.textContent =
+                `Payment successful! Order ${verification.orderNumber} confirmed.`;
+
+            // Clear cart only after successful verification.
+            cart = {};
+
+            saveCart();
+
+            renderCart();
+
+            form.reset();
+
+            // Close checkout modal after successful payment.
+            checkoutModal.classList.remove("show");
+
+            // Optional WhatsApp sharing.
+            const whatsappButton =
+                document.getElementById("whatsappReceiptBtn");
+
+            if (whatsappButton) {
+
+                whatsappButton.style.display = "block";
+
+                whatsappButton.onclick = function () {
+
+                    shareOrderOnWhatsApp({
+                        orderNumber:
+                            verification.orderNumber,
+
+                        paymentStatus:
+                            verification.paymentStatus ||
+                            "PAID",
+
+                        items: items.map(item => {
+
+                            const product =
+                                products.find(
+                                    p =>
+                                        p.name ===
+                                        item.productName
+                                );
+
+                            const lineTotal =
+                                product
+                                    ? calculatePrice(
+                                        product,
+                                        item.quantity
+                                    ) * item.count
+                                    : 0;
+
+                            return {
+                                productName:
+                                    item.productName,
+                                quantity:
+                                    item.quantity,
+                                lineTotal
+                            };
+
+                        }),
+
+                        total:
+                            verification.total ||
+                            order.total
+                    });
+
+                };
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Payment verification error:",
+                error
+            );
+
+            orderMessage.textContent =
+                "Payment confirmation is pending. Do not pay again. " +
+                "Please check your order or contact MEATZY support. " +
+                `Reference: ${
+                    order.orderNumber ||
+                    order.orderId
+                }`;
+
+        } finally {
+
+            submitButton.disabled = false;
+
+        }
+    },
+
+    modal: {
+
+        ondismiss: function () {
+
+            orderMessage.textContent =
+                "Payment window closed. Your cart is still available.";
+
+            submitButton.disabled = false;
+
         }
 
-        // Payment is confirmed by the server.
-        razorpay.close();
-
-        orderMessage.textContent =
-            `Payment successful! Order ${verification.orderNumber} confirmed.`;
-
-        // Clear cart only after successful verification.
-        cart = {};
-        saveCart();
-        renderCart();
-        form.reset();
-
-        // Close checkout modal.
-        checkoutModal.classList.remove("show");
-
-    } catch (error) {
-        console.error(
-            "Payment verification error:",
-            error
-        );
-
-        orderMessage.textContent =
-            "Payment confirmation is pending. Do not pay again. " +
-            "Please check your order or contact MEATZY support. " +
-            `Reference: ${order.orderNumber || order.orderId}`;
-
-    } finally {
-        submitButton.disabled = false;
     }
-},
+};
 
-modal: {
-    ondismiss: function () {
-        orderMessage.textContent =
-            "Payment window closed. Your cart is still available.";
 
-        submitButton.disabled = false;
-    }
-}
-
-};   // IMPORTANT: closes const options = { ... }
-
+// Create Razorpay checkout.
 const razorpay =
     new window.Razorpay(options);
 
+
+// Handle Razorpay payment failure.
 razorpay.on(
     "payment.failed",
     function (response) {
@@ -1078,9 +1154,12 @@ razorpay.on(
             "Payment failed. Your cart is still available. Please try again.";
 
         submitButton.disabled = false;
+
     }
 );
 
+
+// Open Razorpay.
 razorpay.open();
 
 /* =====================================================
