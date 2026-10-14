@@ -863,25 +863,44 @@ document
 
         // Convert the cart object into the API's expected array
       
-const items = Object.values(cart).map((cartItem) => {
-    const product = products.find(
-        p => p.id === Number(cartItem.productId)
-    );
+let items;
 
-    if (!product) {
-        throw new Error(
-            "Product not found. Please remove it and add it again."
+try {
+
+    items = Object.values(cart).map((cartItem) => {
+
+        const product = products.find(
+            p => p.id === Number(cartItem.productId)
         );
-    }
 
-    return {
-        productName: product.name === "Eggs"
-            ? "Eggs Tray"
-            : product.name,
-        quantity: Number(cartItem.quantity),
-        count: Number(cartItem.count)
-    };
-});
+        if (!product) {
+            throw new Error(
+                "Product not found. Please remove it and add it again."
+            );
+        }
+
+        return {
+            productName:
+                product.name === "Eggs"
+                    ? "Eggs Tray"
+                    : product.name,
+
+            quantity: Number(cartItem.quantity),
+
+            count: Number(cartItem.count)
+        };
+
+    });
+
+} catch (error) {
+
+    console.error("Cart conversion error:", error);
+
+    orderMessage.textContent =
+        error.message;
+
+    return;
+}
 
         submitButton.disabled = true;
 
