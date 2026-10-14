@@ -10,6 +10,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// Connect to the Cloud Function
+// const functions = firebase.functions();
+// const placeOrderFunction = functions.httpsCallable("placeOrder");
+
 /* =====================================================
    MEATZY PRODUCTS
 ===================================================== */
@@ -786,7 +790,7 @@ document
 
 
 /* =====================================================
-   CLOSE CHECKOUT - COD / RAZORPAY
+   CLOSE CHECKOUT
 ===================================================== */
 
 document
@@ -807,372 +811,184 @@ document
    CHECKOUT FORM
 ===================================================== */
 
-/* =====================================================
-   CHECKOUT FORM — COD + RAZORPAY
-===================================================== */
-
-const API_BASE = "https://meaty-api.onrender.com";
-
 document
     .getElementById("checkoutForm")
-    .addEventListener("submit", async function (event) {
-        event.preventDefault();
+    .addEventListener(
+        "submit",
+        async function (event) {
 
-        const form = this;
-        const submitButton = form.querySelector('[type="submit"]');
-        const orderMessage = document.getElementById("orderMessage");
-
-        if (submitButton.disabled) return;
-
-        // cart is an OBJECT, not an array
-        const cartEntries = Object.entries(cart);
-
-        if (cartEntries.length === 0) {
-            orderMessage.textContent = "Your cart is empty.";
-            return;
-        }
-
-        const customer = {
-            name: document.getElementById("customerName").value.trim(),
-            phone: document.getElementById("customerPhone").value.trim(),
-            address: document.getElementById("customerAddress").value.trim()
-        };
-
-        const deliverySlot =
-            document.getElementById("deliverySlot").value;
-
-        const paymentMethod =
-            document.getElementById("paymentMethod").value;
-
-        if (!customer.name || customer.name.length < 2) {
-            orderMessage.textContent = "Please enter your name.";
-            return;
-        }
-
-        if (!/^[6-9]\d{9}$/.test(customer.phone)) {
-            orderMessage.textContent =
-                "Enter a valid 10-digit Indian mobile number.";
-            return;
-        }
-
-        if (customer.address.length < 5) {
-            orderMessage.textContent =
-                "Please enter your complete delivery address.";
-            return;
-        }
-
-        // Convert the cart object into the API's expected array
-      
-let items;
-
-try {
-
-    items = Object.values(cart).map((cartItem) => {
-
-        const product = products.find(
-            p => p.id === Number(cartItem.productId)
-        );
-
-        if (!product) {
-            throw new Error(
-                "Product not found. Please remove it and add it again."
-            );
-        }
-
-        return {
-            productName:
-                product.name === "Eggs"
-                    ? "Eggs Tray"
-                    : product.name,
-
-            quantity: Number(cartItem.quantity),
-
-            count: Number(cartItem.count)
-        };
-
-    });
-
-} catch (error) {
-
-    console.error("Cart conversion error:", error);
-
-    orderMessage.textContent =
-        error.message;
-
-    return;
-}
-
-        submitButton.disabled = true;
-
-        try {
-            if (paymentMethod === "COD") {
-                orderMessage.textContent = "Placing your order...";
-
-                const response = await fetch(`${API_BASE}/api/orders`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        customer,
-                        deliverySlot,
-                        items
-                    })
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || "Unable to place order.");
-                }
+            event.preventDefault();
 
 
-                const successMessage =
-                    `Order ${result.orderNumber} placed successfully. ` +
-                    `Total: ₹${result.total}. Payment: Cash on Delivery.`;
-                
-                orderMessage.textContent = successMessage;
-                
-                // Clear the cart and update the display.
-                cart = {};
-                saveCart();
-                renderCart();
-                
-                // Reset checkout fields.
-                form.reset();
-                
-                // Close checkout and cart automatically.
-                checkoutModal.classList.remove("show");
-                closeCart();
-                
-                // Show the confirmation after closing the panels.
-                alert(successMessage);
-                
+            const name =
+                document
+                    .getElementById(
+                        "customerName"
+                    )
+                    .value
+                    .trim();
+
+
+            const phone =
+                document
+                    .getElementById(
+                        "customerPhone"
+                    )
+                    .value
+                    .trim();
+
+
+            const address =
+                document
+                    .getElementById(
+                        "customerAddress"
+                    )
+                    .value
+                    .trim();
+
+
+            const deliverySlot =
+                document
+                    .getElementById(
+                        "deliverySlot"
+                    )
+                    .value;
+
+
+            /* Indian mobile validation */
+
+            if (
+                !/^[6-9]\d{9}$/.test(phone)
+            ) {
+
+                alert(
+                    "Enter a valid 10-digit Indian mobile number."
+                );
+
                 return;
             }
 
-            if (paymentMethod !== "RAZORPAY") {
-                throw new Error("Please select a valid payment method.");
-            }
+const orderId =
+    "MZ" +
+    Date.now()
+        .toString()
+        .slice(-7);
 
-            if (typeof window.Razorpay !== "function") {
-                throw new Error(
-                    "Razorpay checkout did not load. Check your checkout.js script."
-                );
-            }
+const items = Object.entries(cart).map(
+    ([cartKey, item]) => {
 
-            orderMessage.textContent = "Creating secure payment order...";
-
-            const createResponse = await fetch(
-                `${API_BASE}/api/payments/create-order`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        customer,
-                        deliverySlot,
-                        items
-                    })
-                }
+        const product =
+            products.find(
+                p => p.id === item.productId
             );
 
-            const order = await createResponse.json();
-
-            if (!createResponse.ok) {
-                throw new Error(
-                    order.error || `Payment order failed (${createResponse.status}).`
-                );
-            }
-
-            if (!order.keyId || !order.razorpayOrderId || !order.amount) {
-                throw new Error("The server returned incomplete payment details.");
-            }
-
-     const options = {
-    key: order.keyId,
-    amount: order.amount,
-    currency: order.currency || "INR",
-    name: "MEATZY Fresh Meat",
-    description: `Order ${order.orderNumber}`,
-    order_id: order.razorpayOrderId,
-
-    prefill: {
-        name: customer.name,
-        contact: customer.phone
-    },
-
-    notes: {
-        meatzyOrderNumber: order.orderNumber
-    },
-
-    theme: {
-        color: "#d8aa50"
-    },
-
-    handler: async function (paymentResponse) {
-
-        submitButton.disabled = true;
-        orderMessage.textContent = "Verifying payment...";
-
-        try {
-
-            const verifyResponse = await fetch(
-                `${API_BASE}/api/payments/verify`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        orderId: order.orderId,
-
-                        razorpay_order_id:
-                            paymentResponse.razorpay_order_id,
-
-                        razorpay_payment_id:
-                            paymentResponse.razorpay_payment_id,
-
-                        razorpay_signature:
-                            paymentResponse.razorpay_signature
-                    })
-                }
+        const price =
+            calculatePrice(
+                product,
+                item.quantity
             );
 
-            const verification =
-                await verifyResponse.json();
-
-            if (
-                !verifyResponse.ok ||
-                !verification.success
-            ) {
-                throw new Error(
-                    verification.error ||
-                    "Payment verification failed."
-                );
-            }
-
-            /*
-             * IMPORTANT:
-             * Only clear the cart after the SERVER
-             * confirms the Razorpay signature.
-             */
-
-            orderMessage.textContent =
-                `Payment successful! Order ${verification.orderNumber} confirmed.`;
-
-            cart = {};
-
-            saveCart();
-
-            renderCart();
-
-            form.reset();
-
-            /*
-             * Close Razorpay popup
-             */
-            razorpay.close();
-
-            /*
-             * Close checkout modal
-             */
-            checkoutModal.classList.remove("show");
-
-            /*
-             * Close cart drawer
-             */
-            closeCart();
-
-            /*
-             * Show confirmation
-             */
-            alert(
-                `Payment successful!\n\n` +
-                `Order: ${verification.orderNumber}\n` +
-                `Total: ₹${verification.total || order.total}`
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Payment verification error:",
-                error
-            );
-
-            /*
-             * DO NOT clear cart.
-             * DO NOT say payment is successful.
-             * Customer should not pay again immediately.
-             */
-
-            orderMessage.textContent =
-                "Payment confirmation is pending. " +
-                "Do not pay again immediately. " +
-                "Please contact MEATZY support. " +
-                `Reference: ${order.orderNumber || order.orderId}`;
-
-        } finally {
-
-            submitButton.disabled = false;
-
-        }
-    },
-
-    modal: {
-
-        ondismiss: function () {
-
-            orderMessage.textContent =
-                "Payment window closed. Your cart is still available.";
-
-            submitButton.disabled = false;
-
-        }
-
-    }
-
-};   // <-- VERY IMPORTANT: closes options
-
-
-/*
- * Create Razorpay checkout
- */
-
-const razorpay =
-    new window.Razorpay(options);
-
-
-/*
- * Payment failed
- */
-
-razorpay.on(
-    "payment.failed",
-    function (response) {
-
-        console.error(
-            "Razorpay payment failed:",
-            response.error?.description
-        );
-
-        orderMessage.textContent =
-            "Payment failed. Your cart is still available. Please try again.";
-
-        submitButton.disabled = false;
-
+        return {
+            productId: product.id,
+            productName: product.name,
+            category: product.category,
+            quantity: item.quantity,
+            count: item.count,
+            price: price,
+            total: price * item.count
+        };
     }
 );
 
+const subtotal =
+    items.reduce(
+        (sum, item) =>
+            sum + item.total,
+        0
+    );
 
-/*
- * Open Razorpay
- */
+const deliveryCharge =
+    subtotal > 0 ? 20 : 0;
 
-razorpay.open();
+const total =
+    subtotal + deliveryCharge;
 
-/* =====================================================
-   MOBILE MENU
-===================================================== */
+const orderMessage =
+    document.getElementById(
+        "orderMessage"
+    );
+
+orderMessage.textContent =
+    "Saving your order...";
+
+
+try {
+    const response = await fetch(
+        "https://meaty-api.onrender.com/api/orders",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                customer: {
+                    name,
+                    phone,
+                    address
+                },
+                deliverySlot,
+                items: items.map(item => ({
+                    productId: item.productId,
+                    productName: item.productName,
+                    category: item.category,
+                    quantity: item.quantity,
+                    count: item.count,
+                    price: item.price,
+                    total: item.total
+                }))
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.error || "Unable to place your order."
+        );
+    }
+
+    orderMessage.textContent =
+        `Order ${result.orderNumber} placed successfully. ` +
+        `Subtotal ₹${result.subtotal}, ` +
+        `delivery ₹${result.deliveryCharge}, ` +
+        `total ₹${result.total}.`;
+
+    cart = {};
+    saveCart();
+
+    document.getElementById("checkoutForm").reset();
+
+} catch (error) {
+    console.error("Order submission failed:", error);
+
+    orderMessage.textContent =
+        error.message ||
+        "Unable to place order. Please try again.";
+}   
+
+            saveCart();
+
+
+            document
+                .getElementById(
+                    "checkoutForm"
+                )
+                .reset();
+
+        }
+    );
+
 
 /* =====================================================
    MOBILE MENU
@@ -1362,31 +1178,3 @@ render();
 renderCart();
 
 calculateProtein();
-
-/*==========================================================
-WHATS APP ORDER
-=========================================================*/
-
-
-const MEATZY_WHATSAPP = "919059781224";
-
-function shareOrderOnWhatsApp(order) {
-  // Call this only after the server confirms the order.
-  const lines = [
-    "MEATZY FRESH MEAT",
-    `Order: ${order.orderNumber}`,
-    `Payment: ${order.paymentStatus}`,
-    ...order.items.map(item =>
-      `${item.productName} x ${item.quantity} — ₹${item.lineTotal}`
-    ),
-    `Total: ₹${order.total}`,
-    "",
-    "Please confirm my order."
-  ];
-
-  const url =
-    `https://wa.me/${MEATZY_WHATSAPP}?text=` +
-    encodeURIComponent(lines.join("\n"));
-
-  window.open(url, "_blank", "noopener,noreferrer");
-}
