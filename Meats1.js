@@ -1001,9 +1001,12 @@ handler: async function (paymentResponse) {
                 },
                 body: JSON.stringify({
                     orderId: order.orderId,
-                    razorpay_order_id: paymentResponse.razorpay_order_id,
-                    razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                    razorpay_signature: paymentResponse.razorpay_signature
+                    razorpay_order_id:
+                        paymentResponse.razorpay_order_id,
+                    razorpay_payment_id:
+                        paymentResponse.razorpay_payment_id,
+                    razorpay_signature:
+                        paymentResponse.razorpay_signature
                 })
             }
         );
@@ -1012,37 +1015,72 @@ handler: async function (paymentResponse) {
 
         if (!verifyResponse.ok || !verification.success) {
             throw new Error(
-                verification.error || "Payment verification failed."
+                verification.error ||
+                "Payment verification failed."
             );
         }
 
-        // Close Razorpay checkout after successful verification.
+        // Payment is confirmed by the server.
         razorpay.close();
 
         orderMessage.textContent =
             `Payment successful! Order ${verification.orderNumber} confirmed.`;
 
-        // Clear and redraw the cart.
+        // Clear cart only after successful verification.
         cart = {};
         saveCart();
         renderCart();
         form.reset();
 
-        // Close your checkout modal here if it has a close function.
-        // Example: closeCheckoutModal();
+        // Close checkout modal.
+        checkoutModal.classList.remove("show");
 
     } catch (error) {
-        console.error("Payment verification error:", error);
+        console.error(
+            "Payment verification error:",
+            error
+        );
+
         orderMessage.textContent =
             "Payment confirmation is pending. Do not pay again. " +
             "Please check your order or contact MEATZY support. " +
             `Reference: ${order.orderNumber || order.orderId}`;
-               } finally {
+
+    } finally {
         submitButton.disabled = false;
     }
-};
+},
 
-const razorpay = new window.Razorpay(options);
+modal: {
+    ondismiss: function () {
+        orderMessage.textContent =
+            "Payment window closed. Your cart is still available.";
+
+        submitButton.disabled = false;
+    }
+}
+
+};   // IMPORTANT: closes const options = { ... }
+
+const razorpay =
+    new window.Razorpay(options);
+
+razorpay.on(
+    "payment.failed",
+    function (response) {
+
+        console.error(
+            "Razorpay payment failed:",
+            response.error?.description
+        );
+
+        orderMessage.textContent =
+            "Payment failed. Your cart is still available. Please try again.";
+
+        submitButton.disabled = false;
+    }
+);
+
 razorpay.open();
 
 /* =====================================================
