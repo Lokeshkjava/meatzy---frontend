@@ -10,22 +10,34 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Connect to the Cloud Function
-// const functions = firebase.functions();
-// const placeOrderFunction = functions.httpsCallable("placeOrder");
+/* =====================================================
+   MEATZY FRESH MEAT
+   FRONTEND VERSION
+===================================================== */
+
 
 /* =====================================================
-   MEATZY PRODUCTS
+   WHATSAPP NUMBER
+===================================================== */
+
+const MEATZY_WHATSAPP = "919059781224";
+
+
+/* =====================================================
+   PRODUCTS
 ===================================================== */
 
 const products = [
+
+    /* ================= CHICKEN ================= */
 
     {
         id: 1,
         name: "Chicken Curry Cut",
         category: "Chicken",
         price: 320,
-        image: "Chicken Curry cut.webp"
+        unit: "kg",
+        image: "Chicken Curry Cut.webp"
     },
 
     {
@@ -33,6 +45,7 @@ const products = [
         name: "Chicken Boneless",
         category: "Chicken",
         price: 420,
+        unit: "kg",
         image: "Chicken boneless.webp"
     },
 
@@ -41,6 +54,7 @@ const products = [
         name: "Chicken Breast",
         category: "Chicken",
         price: 390,
+        unit: "kg",
         image: "Chicken breast.webp"
     },
 
@@ -49,38 +63,126 @@ const products = [
         name: "Chicken Wings",
         category: "Chicken",
         price: 350,
+        unit: "kg",
         image: "Chicken wings.webp"
     },
 
+
+    /* ================= BURN CHICKEN ================= */
+
     {
         id: 5,
+        name: "Burn Chicken",
+        category: "Burn Chicken",
+        price: 450,
+        unit: "kg",
+        image: "Burn Chicken.jpg"
+    },
+
+
+    /* ================= DESI CHICKEN ================= */
+
+    {
+        id: 6,
+        name: "Desi Chicken",
+        category: "Desi Chicken",
+        price: 680,
+        unit: "kg",
+        image: "Desi chicken cut.jpg"
+    },
+
+
+    /* ================= LIVER ================= */
+
+    {
+        id: 7,
+        name: "Chicken Liver",
+        category: "Liver",
+        price: 280,
+        unit: "kg",
+        image: "Chicken liver.webp"
+    },
+
+
+    /* ================= MUTTON ================= */
+
+    {
+        id: 8,
         name: "Mutton Curry Cut",
         category: "Mutton",
         price: 900,
+        unit: "kg",
+        sundayOnly: true,
         image: "Mutton curry cut.webp"
     },
 
     {
-        id: 6,
+        id: 9,
         name: "Mutton Boneless",
         category: "Mutton",
         price: 1400,
+        unit: "kg",
+        sundayOnly: true,
         image: "Mutton Boneless.webp"
     },
 
-    {
-        id: 7,
-        name: "Desi Chicken",
-        category: "Desi Chicken",
-        price: 680,
-        image: "Desi chicken cut.jpg"
-    },
+
+    /* ================= BOTI ================= */
 
     {
-        id: 8,
-        name: "Eggs",
-        category: "Eggs",
+        id: 10,
+        name: "Boti",
+        category: "Boti",
+        price: 850,
+        unit: "kg",
+        sundayOnly: true,
+        image: "Boti.jpg"
+    },
+
+
+    /* ================= GOAT HEAD + PAYA ================= */
+
+    {
+        id: 11,
+        name: "Goat Head with Paya",
+        category: "Goat Head + Paya",
+        price: 700,
+        unit: "piece",
+        sundayOnly: true,
+        image: "Head and Legs.jpg"
+    },
+
+
+    /* ================= SNEHA OMEGA EGGS ================= */
+
+    {
+        id: 12,
+        name: "Sneha Omega Eggs",
+        category: "Sneha Omega Eggs",
+        price: 90,
+        eggPackPrices: {
+            12: 90,
+            30: 210
+        },
+        unit: "pack",
+        image: "Sneha Eggs.avif"
+    },
+
+
+    /* ================= NORMAL EGGS ================= */
+
+    {
+        id: 13,
+        name: "Normal Eggs",
+        category: "Normal Eggs",
         price: 180,
+        eggPackPrices: {
+            6: 36,
+            12: 72,
+            18: 108,
+            30: 180
+        },
+        unit: "pack",
         image: "Eggs Tray.jpeg"
     }
 
@@ -120,17 +222,49 @@ const checkoutModal =
 const cartItems =
     document.getElementById("cartItems");
 
+const cartSubtotal =
+    document.getElementById("cartSubtotal");
+
+const cartDelivery =
+    document.getElementById("cartDelivery");
+
 const cartTotal =
     document.getElementById("cartTotal");
 
 const cartCount =
     document.getElementById("cartCount");
 
-const proteinWeight =
-    document.getElementById("proteinWeight");
+const orderNowBtn =
+    document.getElementById("orderNowBtn");
 
-const proteinResult =
-    document.getElementById("proteinResult");
+const menuBtn =
+    document.getElementById("menuBtn");
+
+const nav =
+    document.getElementById("nav");
+
+const locationBtn =
+    document.getElementById("locationBtn");
+
+const locationStatus =
+    document.getElementById("locationStatus");
+
+const checkoutLocationBtn =
+    document.getElementById("checkoutLocationBtn");
+
+const checkoutLocationStatus =
+    document.getElementById("checkoutLocationStatus");
+
+
+/* =====================================================
+   SUNDAY CHECK
+===================================================== */
+
+function isSunday() {
+
+    return new Date().getDay() === 0;
+
+}
 
 
 /* =====================================================
@@ -140,27 +274,49 @@ const proteinResult =
 function renderFilters() {
 
     const categories = [
+
         "All",
+
         "Chicken",
+
+        "Burn Chicken",
+
+        "Liver",
+
         "Mutton",
-        "Desi Chicken",
-        "Eggs"
+
+        "Boti",
+
+        "Goat Head + Paya",
+
+        "Sneha Omega Eggs",
+
+        "Normal Eggs"
+
     ];
 
-    filtersEl.innerHTML = categories
-        .map(category => {
+
+    filtersEl.innerHTML =
+        categories.map(category => {
 
             return `
+
                 <button
-                    class="${category === selectedCategory ? "active" : ""}"
-                    onclick="setCategory('${category}')"
-                >
+                    class="${
+                        category === selectedCategory
+                            ? "active"
+                            : ""
+                    }"
+                    onclick="setCategory('${category}')">
+
                     ${category}
+
                 </button>
+
             `;
 
-        })
-        .join("");
+        }).join("");
+
 }
 
 
@@ -174,11 +330,17 @@ function setCategory(category) {
 
     render();
 
-    document
-        .getElementById("shop")
-        .scrollIntoView({
+    const shop =
+        document.getElementById("shop");
+
+    if (shop) {
+
+        shop.scrollIntoView({
             behavior: "smooth"
         });
+
+    }
+
 }
 
 
@@ -190,25 +352,43 @@ function getQuantityOptions(product) {
 
     /* Eggs */
 
-    if (product.category === "Eggs") {
+    if (
+        product.category === "Sneha Omega Eggs"
+    ) {
 
-        return [
-            6,
-            12,
-            18,
-            30
-        ];
+        return [12, 30];
 
     }
 
 
-    /* Chicken / Mutton / Desi Chicken */
+    if (
+        product.category === "Normal Eggs"
+    ) {
+
+        return [6, 12, 18, 30];
+
+    }
+
+
+    /* Goat head */
+
+    if (
+        product.category === "Goat Head + Paya"
+    ) {
+
+        return [1];
+
+    }
+
+
+    /* Meat */
 
     return [
         250,
         500,
         1000
     ];
+
 }
 
 
@@ -216,13 +396,29 @@ function getQuantityOptions(product) {
    QUANTITY TEXT
 ===================================================== */
 
-function formatQuantity(product, quantity) {
+function formatQuantity(
+    product,
+    quantity
+) {
 
-    if (product.category === "Eggs") {
+    if (
+        product.category === "Sneha Omega Eggs" ||
+        product.category === "Normal Eggs"
+    ) {
 
         return `${quantity} eggs`;
 
     }
+
+
+    if (
+        product.category === "Goat Head + Paya"
+    ) {
+
+        return "1 set";
+
+    }
+
 
     if (quantity === 1000) {
 
@@ -230,48 +426,51 @@ function formatQuantity(product, quantity) {
 
     }
 
+
     return `${quantity} grams`;
+
 }
 
 
 /* =====================================================
-   PRICE CALCULATION
+   PRICE
 ===================================================== */
 
-function calculatePrice(product, quantity) {
+function calculatePrice(
+    product,
+    quantity
+) {
 
     /* Eggs */
 
-    if (product.category === "Eggs") {
+    if (
+        product.eggPackPrices &&
+        product.eggPackPrices[quantity]
+    ) {
 
-        /*
-            ₹180 = 30 eggs
+        return product.eggPackPrices[quantity];
 
-            6 eggs  = ₹36
-            12 eggs = ₹72
-            18 eggs = ₹108
-            30 eggs = ₹180
-        */
+    }
 
-        return Math.round(
-            (product.price / 30) * quantity
-        );
+
+    /* Goat head */
+
+    if (
+        product.category === "Goat Head + Paya"
+    ) {
+
+        return product.price;
+
     }
 
 
     /* Meat */
 
-    /*
-        product.price = price per 1kg
-
-        250g = 25%
-        500g = 50%
-        1000g = 100%
-    */
-
     return Math.round(
-        (product.price / 1000) * quantity
+        (product.price / 1000) *
+        quantity
     );
+
 }
 
 
@@ -284,126 +483,180 @@ function render() {
     renderFilters();
 
 
-    const filteredProducts =
+    let filteredProducts =
         products.filter(product => {
 
-            return (
-                selectedCategory === "All" ||
-                product.category === selectedCategory
-            );
+            if (
+                selectedCategory !== "All" &&
+                product.category !== selectedCategory
+            ) {
+
+                return false;
+
+            }
+
+
+            return true;
 
         });
 
 
     productsEl.innerHTML =
-        filteredProducts
-            .map(product => {
+        filteredProducts.map(product => {
 
-                const index =
-                    products.findIndex(
-                        p => p.id === product.id
-                    );
-
-                const quantities =
-                    getQuantityOptions(product);
-
-                const firstQuantity =
-                    quantities[0];
-
-                const firstPrice =
-                    calculatePrice(
-                        product,
-                        firstQuantity
-                    );
+            const index =
+                products.findIndex(
+                    p => p.id === product.id
+                );
 
 
-                return `
+            const quantities =
+                getQuantityOptions(product);
 
-                    <article class="product">
 
-                        <div class="product-image">
+            const firstQuantity =
+                quantities[0];
 
-                            <img
-                                src="${product.image}"
-                                alt="${product.name}"
-                                loading="lazy"
-                            >
 
+            const firstPrice =
+                calculatePrice(
+                    product,
+                    firstQuantity
+                );
+
+
+            const sundayMessage =
+                product.sundayOnly &&
+                !isSunday();
+
+
+            return `
+
+                <article class="product">
+
+                    <div class="product-image">
+
+                        <img
+                            src="${product.image}"
+                            alt="${product.name}"
+                            loading="eager">
+
+                    </div>
+
+
+                    <div class="product-body">
+
+                        <h3>
+                            ${product.name}
+                        </h3>
+
+
+                        <div class="meta">
+                            ${product.category}
                         </div>
 
 
-                        <div class="product-body">
-
-                            <h3>
-                                ${product.name}
-                            </h3>
-
-
-                            <div class="meta">
-                                ${product.category}
-                            </div>
-
-
-                            <label class="quantity-label">
-                                Select quantity
-                            </label>
+                        ${
+                            product.sundayOnly
+                            ? `
+                                <div class="sunday-badge">
+                                    SUNDAY ONLY
+                                </div>
+                              `
+                            : ""
+                        }
 
 
-                            <select
-                                class="weight-select"
-                                id="quantity-${index}"
-                                onchange="updateProductPrice(${index})"
-                            >
+                        ${
+                            sundayMessage
+                            ? `
+                                <div class="unavailable-message">
+                                    Available only on Sunday
+                                </div>
+                              `
+                            : ""
+                        }
 
-                                ${quantities
-                                    .map(quantity => {
 
-                                        return `
-                                            <option
-                                                value="${quantity}"
-                                            >
-                                                ${formatQuantity(
+                        <label class="quantity-label">
+                            Select quantity
+                        </label>
+
+
+                        <select
+                            class="weight-select"
+                            id="quantity-${index}"
+                            onchange="updateProductPrice(${index})"
+                            ${
+                                sundayMessage
+                                ? "disabled"
+                                : ""
+                            }>
+
+                            ${quantities.map(
+                                quantity => {
+
+                                    return `
+
+                                        <option
+                                            value="${quantity}">
+
+                                            ${
+                                                formatQuantity(
                                                     product,
                                                     quantity
-                                                )}
-                                            </option>
-                                        `;
+                                                )
+                                            }
 
-                                    })
-                                    .join("")
+                                        </option>
+
+                                    `;
+
                                 }
+                            ).join("")}
 
-                            </select>
-
-
-                            <div
-                                class="price"
-                                id="price-${index}"
-                            >
-                                ₹${firstPrice}
-                            </div>
+                        </select>
 
 
-                            <button
-                                class="add-btn"
-                                onclick="addToCart(${index})"
-                            >
-                                ADD TO CART
-                            </button>
+                        <div
+                            class="price"
+                            id="price-${index}">
+
+                            ₹${firstPrice}
 
                         </div>
 
-                    </article>
 
-                `;
+                        <button
+                            class="add-btn"
+                            onclick="addToCart(${index})"
+                            ${
+                                sundayMessage
+                                ? "disabled"
+                                : ""
+                            }>
 
-            })
-            .join("");
+                            ${
+                                sundayMessage
+                                ? "AVAILABLE SUNDAY"
+                                : "ADD TO CART"
+                            }
+
+                        </button>
+
+                    </div>
+
+                </article>
+
+            `;
+
+        }).join("");
+
 }
 
 
 /* =====================================================
-   UPDATE PRODUCT PRICE
+   UPDATE PRICE
 ===================================================== */
 
 function updateProductPrice(index) {
@@ -411,10 +664,12 @@ function updateProductPrice(index) {
     const product =
         products[index];
 
+
     const quantitySelect =
         document.getElementById(
             `quantity-${index}`
         );
+
 
     const priceElement =
         document.getElementById(
@@ -422,8 +677,13 @@ function updateProductPrice(index) {
         );
 
 
-    if (!quantitySelect || !priceElement) {
+    if (
+        !quantitySelect ||
+        !priceElement
+    ) {
+
         return;
+
     }
 
 
@@ -440,6 +700,7 @@ function updateProductPrice(index) {
 
     priceElement.textContent =
         `₹${price}`;
+
 }
 
 
@@ -453,27 +714,38 @@ function addToCart(index) {
         products[index];
 
 
+    /* Sunday-only products */
+
+    if (
+        product.sundayOnly &&
+        !isSunday()
+    ) {
+
+        alert(
+            `${product.name} is available only on Sunday.`
+        );
+
+        return;
+
+    }
+
+
     const quantitySelect =
         document.getElementById(
             `quantity-${index}`
         );
 
 
+    if (!quantitySelect) {
+
+        return;
+
+    }
+
+
     const quantity =
         Number(quantitySelect.value);
 
-
-    /*
-        Unique cart key
-
-        Example:
-
-        Chicken Breast - 250g
-        Chicken Breast - 500g
-
-        They are treated as separate
-        cart items.
-    */
 
     const cartKey =
         `${product.id}-${quantity}`;
@@ -482,9 +754,16 @@ function addToCart(index) {
     if (!cart[cartKey]) {
 
         cart[cartKey] = {
-            productId: product.id,
-            quantity: quantity,
-            count: 0
+
+            productId:
+                product.id,
+
+            quantity:
+                quantity,
+
+            count:
+                0
+
         };
 
     }
@@ -496,6 +775,7 @@ function addToCart(index) {
     saveCart();
 
     openCart();
+
 }
 
 
@@ -510,12 +790,14 @@ function saveCart() {
         JSON.stringify(cart)
     );
 
+
     renderCart();
+
 }
 
 
 /* =====================================================
-   CHANGE CART QUANTITY
+   CHANGE CART
 ===================================================== */
 
 function changeCartQuantity(
@@ -524,14 +806,18 @@ function changeCartQuantity(
 ) {
 
     if (!cart[cartKey]) {
+
         return;
+
     }
 
 
     cart[cartKey].count += change;
 
 
-    if (cart[cartKey].count <= 0) {
+    if (
+        cart[cartKey].count <= 0
+    ) {
 
         delete cart[cartKey];
 
@@ -539,8 +825,36 @@ function changeCartQuantity(
 
 
     saveCart();
+
 }
 
+
+/* =====================================================
+   DELIVERY CHARGE
+===================================================== */
+
+function calculateDeliveryCharge(subtotal) {
+
+    if (subtotal <= 0) {
+
+        return 0;
+
+    }
+
+    /*
+        Below ₹500  → ₹20 delivery
+        ₹500 or more → FREE delivery
+    */
+
+    if (subtotal < 500) {
+
+        return 20;
+
+    }
+
+    return 0;
+
+}
 
 /* =====================================================
    RENDER CART
@@ -548,7 +862,7 @@ function changeCartQuantity(
 
 function renderCart() {
 
-    let total = 0;
+    let subtotal = 0;
 
     let itemCount = 0;
 
@@ -557,7 +871,9 @@ function renderCart() {
         Object.keys(cart);
 
 
-    if (cartKeys.length === 0) {
+    if (
+        cartKeys.length === 0
+    ) {
 
         cartItems.innerHTML = `
 
@@ -565,7 +881,7 @@ function renderCart() {
 
                 Your cart is empty.
 
-                <br>
+                <br><br>
 
                 Add fresh products to continue.
 
@@ -573,107 +889,145 @@ function renderCart() {
 
         `;
 
+
+        cartSubtotal.textContent = "0";
+
+        cartDelivery.textContent = "0";
+
         cartTotal.textContent = "0";
 
         cartCount.textContent = "0";
 
         return;
+
     }
 
 
     cartItems.innerHTML =
-        cartKeys
-            .map(cartKey => {
+        cartKeys.map(cartKey => {
 
-                const item =
-                    cart[cartKey];
-
-
-                const product =
-                    products.find(
-                        p => p.id === item.productId
-                    );
+            const item =
+                cart[cartKey];
 
 
-                if (!product) {
-                    return "";
-                }
+            const product =
+                products.find(
+                    p =>
+                        p.id ===
+                        item.productId
+                );
 
 
-                const price =
-                    calculatePrice(
-                        product,
-                        item.quantity
-                    );
+            if (!product) {
+
+                return "";
+
+            }
 
 
-                const itemTotal =
-                    price * item.count;
+            const price =
+                calculatePrice(
+                    product,
+                    item.quantity
+                );
 
 
-                total += itemTotal;
+            const itemTotal =
+                price *
+                item.count;
 
-                itemCount += item.count;
+
+            subtotal += itemTotal;
+
+            itemCount +=
+                item.count;
 
 
-                return `
+            return `
 
-                    <div class="cart-row">
+                <div class="cart-row">
 
-                        <div>
+                    <div>
 
-                            <strong>
-                                ${product.name}
-                            </strong>
+                        <strong>
+                            ${product.name}
+                        </strong>
 
-                            <br>
+                        <br>
 
-                            <small>
-                                ${formatQuantity(
+                        <small>
+
+                            ${
+                                formatQuantity(
                                     product,
                                     item.quantity
-                                )}
-                                × ${item.count}
-                                — ₹${itemTotal}
-                            </small>
+                                )
+                            }
 
-                        </div>
+                            × ${item.count}
 
+                            —
+                            ₹${itemTotal}
 
-                        <div class="qty">
-
-                            <button
-                                onclick="changeCartQuantity(
-                                    '${cartKey}',
-                                    -1
-                                )"
-                            >
-                                −
-                            </button>
-
-
-                            <b>
-                                ${item.count}
-                            </b>
-
-
-                            <button
-                                onclick="changeCartQuantity(
-                                    '${cartKey}',
-                                    1
-                                )"
-                            >
-                                +
-                            </button>
-
-                        </div>
+                        </small>
 
                     </div>
 
-                `;
 
-            })
-            .join("");
+                    <div class="qty">
+
+                        <button
+                            onclick="changeCartQuantity(
+                                '${cartKey}',
+                                -1
+                            )">
+
+                            −
+
+                        </button>
+
+
+                        <b>
+                            ${item.count}
+                        </b>
+
+
+                        <button
+                            onclick="changeCartQuantity(
+                                '${cartKey}',
+                                1
+                            )">
+
+                            +
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+
+    const delivery =
+        calculateDeliveryCharge(
+            subtotal
+        );
+
+
+    const total =
+        subtotal +
+        delivery;
+
+
+    cartSubtotal.textContent =
+        subtotal;
+
+
+    cartDelivery.textContent =
+        delivery;
 
 
     cartTotal.textContent =
@@ -682,6 +1036,7 @@ function renderCart() {
 
     cartCount.textContent =
         itemCount;
+
 }
 
 
@@ -696,6 +1051,7 @@ function openCart() {
     overlay.classList.add("show");
 
     renderCart();
+
 }
 
 
@@ -705,9 +1061,14 @@ function openCart() {
 
 function closeCart() {
 
-    cartDrawer.classList.remove("open");
+    cartDrawer.classList.remove(
+        "open"
+    );
 
-    overlay.classList.remove("show");
+    overlay.classList.remove(
+        "show"
+    );
+
 }
 
 
@@ -735,6 +1096,61 @@ overlay.addEventListener(
     "click",
     closeCart
 );
+
+
+/* =====================================================
+   ORDER NOW
+===================================================== */
+
+orderNowBtn.addEventListener(
+    "click",
+    () => {
+
+        document
+            .getElementById("shop")
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+    }
+);
+
+
+/* =====================================================
+   MOBILE MENU
+===================================================== */
+
+menuBtn.addEventListener(
+    "click",
+    () => {
+
+        nav.classList.toggle(
+            "show"
+        );
+
+    }
+);
+
+
+/* =====================================================
+   CLOSE MOBILE MENU
+===================================================== */
+
+nav.querySelectorAll("a")
+    .forEach(link => {
+
+        link.addEventListener(
+            "click",
+            () => {
+
+                nav.classList.remove(
+                    "show"
+                );
+
+            }
+        );
+
+    });
 
 
 /* =====================================================
@@ -778,7 +1194,11 @@ document
                 );
 
                 return;
+
             }
+
+
+            updateCheckoutSummary();
 
 
             checkoutModal.classList.add(
@@ -787,6 +1207,84 @@ document
 
         }
     );
+
+
+/* =====================================================
+   CHECKOUT SUMMARY
+===================================================== */
+
+function updateCheckoutSummary() {
+
+    let subtotal = 0;
+
+
+    Object.values(cart)
+        .forEach(item => {
+
+            const product =
+                products.find(
+                    p =>
+                        p.id ===
+                        item.productId
+                );
+
+
+            if (!product) {
+
+                return;
+
+            }
+
+
+            const price =
+                calculatePrice(
+                    product,
+                    item.quantity
+                );
+
+
+            subtotal +=
+                price *
+                item.count;
+
+        });
+
+
+    const delivery =
+        calculateDeliveryCharge(
+            subtotal
+        );
+
+
+    const total =
+        subtotal +
+        delivery;
+
+
+    document
+        .getElementById(
+            "checkoutSummary"
+        )
+        .innerHTML = `
+
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <strong>₹${subtotal}</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Delivery</span>
+                <strong>₹${delivery}</strong>
+            </div>
+
+            <div class="summary-row total">
+                <span>Total</span>
+                <strong>₹${total}</strong>
+            </div>
+
+        `;
+
+}
 
 
 /* =====================================================
@@ -808,354 +1306,685 @@ document
 
 
 /* =====================================================
-   CHECKOUT FORM
+   LOCATION
+===================================================== */
+
+let customerLocation = null;
+
+
+function getCustomerLocation(
+    statusElement
+) {
+
+    if (
+        !navigator.geolocation
+    ) {
+
+        statusElement.textContent =
+            "Location is not supported by this browser.";
+
+        return;
+
+    }
+
+
+    statusElement.textContent =
+        "Getting your location...";
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        position => {
+
+            const latitude =
+                position.coords.latitude;
+
+            const longitude =
+                position.coords.longitude;
+
+
+            customerLocation = {
+                latitude,
+                longitude
+            };
+
+
+            statusElement.innerHTML =
+
+                `Location selected.<br>` +
+
+                `<a
+                    href="https://www.google.com/maps?q=${latitude},${longitude}"
+                    target="_blank"
+                    rel="noopener">
+
+                    View location on map
+
+                </a>`;
+
+        },
+
+        error => {
+
+            console.error(
+                "Location error:",
+                error
+            );
+
+
+            statusElement.textContent =
+                "Unable to access location. Please enter your address.";
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+        }
+
+    );
+
+}
+
+
+locationBtn.addEventListener(
+    "click",
+    () => {
+
+        getCustomerLocation(
+            locationStatus
+        );
+
+    }
+);
+
+
+checkoutLocationBtn.addEventListener(
+    "click",
+    () => {
+
+        getCustomerLocation(
+            checkoutLocationStatus
+        );
+
+    }
+);
+
+
+/* =====================================================
+   CHECKOUT FORM + FIREBASE ORDER SAVE
 ===================================================== */
 
 document
     .getElementById("checkoutForm")
-    .addEventListener(
-        "submit",
-        async function (event) {
+    .addEventListener("submit", async function(event) {
 
-            event.preventDefault();
+        event.preventDefault();
 
+        const orderMessage =
+            document.getElementById("orderMessage");
 
-            const name =
-                document
-                    .getElementById(
-                        "customerName"
-                    )
-                    .value
-                    .trim();
-
-
-            const phone =
-                document
-                    .getElementById(
-                        "customerPhone"
-                    )
-                    .value
-                    .trim();
-
-
-            const address =
-                document
-                    .getElementById(
-                        "customerAddress"
-                    )
-                    .value
-                    .trim();
-
-
-            const deliverySlot =
-                document
-                    .getElementById(
-                        "deliverySlot"
-                    )
-                    .value;
-
-
-            /* Indian mobile validation */
-
-            if (
-                !/^[6-9]\d{9}$/.test(phone)
-            ) {
-
-                alert(
-                    "Enter a valid 10-digit Indian mobile number."
-                );
-
-                return;
-            }
-
-const orderId =
-    "MZ" +
-    Date.now()
-        .toString()
-        .slice(-7);
-
-const items = Object.entries(cart).map(
-    ([cartKey, item]) => {
-
-        const product =
-            products.find(
-                p => p.id === item.productId
-            );
-
-        const price =
-            calculatePrice(
-                product,
-                item.quantity
-            );
-
-        return {
-            productId: product.id,
-            productName: product.name,
-            category: product.category,
-            quantity: item.quantity,
-            count: item.count,
-            price: price,
-            total: price * item.count
-        };
-    }
-);
-
-const subtotal =
-    items.reduce(
-        (sum, item) =>
-            sum + item.total,
-        0
-    );
-
-const deliveryCharge =
-    subtotal > 0 ? 20 : 0;
-
-const total =
-    subtotal + deliveryCharge;
-
-const orderMessage =
-    document.getElementById(
-        "orderMessage"
-    );
-
-orderMessage.textContent =
-    "Saving your order...";
-
-
-try {
-    const response = await fetch(
-        "https://meaty-api.onrender.com/api/orders",
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                customer: {
-                    name,
-                    phone,
-                    address
-                },
-                deliverySlot,
-                items: items.map(item => ({
-                    productId: item.productId,
-                    productName: item.productName,
-                    category: item.category,
-                    quantity: item.quantity,
-                    count: item.count,
-                    price: item.price,
-                    total: item.total
-                }))
-            })
-        }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-        throw new Error(
-            result.error || "Unable to place your order."
-        );
-    }
-
-    orderMessage.textContent =
-        `Order ${result.orderNumber} placed successfully. ` +
-        `Subtotal ₹${result.subtotal}, ` +
-        `delivery ₹${result.deliveryCharge}, ` +
-        `total ₹${result.total}.`;
-
-    cart = {};
-    saveCart();
-
-    document.getElementById("checkoutForm").reset();
-
-} catch (error) {
-    console.error("Order submission failed:", error);
-
-    orderMessage.textContent =
-        error.message ||
-        "Unable to place order. Please try again.";
-}   
-
-            saveCart();
-
-
+        const name =
             document
-                .getElementById(
-                    "checkoutForm"
-                )
-                .reset();
+                .getElementById("customerName")
+                .value
+                .trim();
+
+        const phone =
+            document
+                .getElementById("customerPhone")
+                .value
+                .trim();
+
+        const address =
+            document
+                .getElementById("customerAddress")
+                .value
+                .trim();
+
+        const deliverySlot =
+            document
+                .getElementById("deliverySlot")
+                .value;
+
+
+        /* ================= VALIDATION ================= */
+
+        if (!/^[6-9]\d{9}$/.test(phone)) {
+
+            alert(
+                "Enter a valid 10-digit Indian mobile number."
+            );
+
+            return;
+        }
+
+
+        if (Object.keys(cart).length === 0) {
+
+            alert("Your cart is empty.");
+
+            return;
+        }
+
+
+        if (!deliverySlot) {
+
+            alert("Please select a delivery slot.");
+
+            return;
+        }
+
+
+        /* ================= ORDER ITEMS ================= */
+
+        const orderItems =
+            Object.values(cart)
+                .map(item => {
+
+                    const product =
+                        products.find(
+                            p =>
+                                p.id ===
+                                item.productId
+                        );
+
+
+                    if (!product) {
+                        return null;
+                    }
+
+
+                    const price =
+                        calculatePrice(
+                            product,
+                            item.quantity
+                        );
+
+
+                    return {
+
+                        productId:
+                            product.id,
+
+                        productName:
+                            product.name,
+
+                        category:
+                            product.category,
+
+                        quantity:
+                            item.quantity,
+
+                        count:
+                            item.count,
+
+                        price:
+                            price,
+
+                        total:
+                            price *
+                            item.count
+                    };
+
+                })
+                .filter(item => item !== null);
+
+
+        /* ================= TOTAL ================= */
+
+        const subtotal =
+            orderItems.reduce(
+                (sum, item) =>
+                    sum + item.total,
+                0
+            );
+
+
+        const deliveryCharge =
+            calculateDeliveryCharge(
+                subtotal
+            );
+
+
+        const total =
+            subtotal +
+            deliveryCharge;
+
+
+        /* ================= ORDER NUMBER ================= */
+
+        const orderNumber =
+            "MZ" +
+            Date.now()
+                .toString()
+                .slice(-7);
+
+
+        /* ================= FIREBASE ORDER ================= */
+
+        const order = {
+
+            orderNumber:
+
+                orderNumber,
+
+            orderDateText: new Date().toLocaleString("en-IN"),
+
+
+            customer: {
+
+                name:
+                    name,
+
+                phone:
+                    phone,
+
+                address:
+                    address
+
+            },
+
+
+            deliverySlot:
+
+                deliverySlot,
+
+
+            items:
+
+                orderItems,
+
+
+            subtotal:
+
+                subtotal,
+
+
+            deliveryCharge:
+
+                deliveryCharge,
+
+
+            total:
+
+                total,
+
+
+            paymentMethod:
+
+                "COD",
+
+
+            paymentStatus:
+
+                "PENDING",
+
+
+            location:
+
+                customerLocation || null,
+
+
+            /* IMPORTANT */
+
+            createdAt:
+
+                firebase.firestore.FieldValue.serverTimestamp()
+
+        };
+
+
+        /* ================= SAVE TO FIREBASE ================= */
+
+        try {
+
+            orderMessage.textContent =
+                "Saving your order...";
+
+
+            const docRef =
+                await db
+                    .collection("orders")
+                    .add(order);
+
+
+            console.log(
+                "Order saved successfully:",
+                docRef.id
+            );
+
+
+            /* ================= SUCCESS ================= */
+
+            showOrderSuccess({
+
+                ...order,
+
+                firebaseId:
+                    docRef.id
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Firebase order save error:",
+                error
+            );
+
+
+            orderMessage.innerHTML = `
+
+                <div class="error-box">
+
+                    <h3>
+                        Order could not be saved
+                    </h3>
+
+                    <p>
+                        Please try again.
+                    </p>
+
+                    <small>
+                        ${error.message}
+                    </small>
+
+                </div>
+
+            `;
 
         }
-    );
+
+    });
 
 
 /* =====================================================
-   MOBILE MENU
+   ORDER SUCCESS
 ===================================================== */
 
-document
-    .getElementById("menuBtn")
-    .addEventListener(
-        "click",
-        () => {
+function showOrderSuccess(order) {
 
-            const nav =
-                document.getElementById(
-                    "nav"
-                );
-
-
-            if (
-                nav.style.display === "flex"
-            ) {
-
-                nav.style.display = "none";
-
-            } else {
-
-                nav.style.display = "flex";
-
-                nav.style.flexDirection =
-                    "column";
-
-                nav.style.position =
-                    "absolute";
-
-                nav.style.top = "72px";
-
-                nav.style.left = "0";
-
-                nav.style.right = "0";
-
-                nav.style.padding = "20px";
-
-                nav.style.background =
-                    "#171614";
-
-            }
-
-        }
-    );
-
-
-/* =====================================================
-   GYM PROTEIN CALCULATOR
-===================================================== */
-
-/*
-    Approximate protein:
-
-    100g = 27g
-    250g = 67.5g
-    500g = 135g
-    750g = 202.5g
-    1000g = 270g
-
-    This is an estimate for raw chicken breast.
-*/
-
-function calculateProtein() {
-
-    const grams =
-        Number(
-            proteinWeight.value
+    const orderMessage =
+        document.getElementById(
+            "orderMessage"
         );
 
 
-    const protein =
-        grams * 0.27;
+    orderMessage.innerHTML = `
+
+        <div class="success-box">
+
+            <h3>
+                Order Placed Successfully!
+            </h3>
+
+            <p>
+                Order Number:
+                <strong>
+                    ${order.orderNumber}
+                </strong>
+            </p>
+
+            <p>
+                Order Date:
+                <strong>
+                    ${order.orderDateText}
+                </strong>
+            </p>
+
+            <p>
+                Total:
+                <strong>
+                    ₹${order.total}
+                </strong>
+            </p>
+
+            <p>
+                Payment:
+                <strong>
+                    Cash on Delivery
+                </strong>
+            </p>
 
 
-    proteinResult.innerHTML = `
+            <button
+                type="button"
+                class="checkout-submit"
+                id="whatsappOrderBtn">
 
-        <strong>
-            ${grams === 1000 ? "1kg" : grams + "g"}
-            chicken ≈
-            ${protein.toFixed(1)}g protein
-        </strong>
+                SEND ORDER ON WHATSAPP
 
-        <br>
+            </button>
 
-        <small>
-            Estimated using approximately
-            27g protein per 100g raw chicken breast.
-            Actual values vary by cut and preparation.
-        </small>
+        </div>
 
     `;
+
+
+    document
+        .getElementById(
+            "whatsappOrderBtn"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                shareOrderOnWhatsApp(
+                    order
+                );
+
+            }
+        );
+
+
+    /* ===============================
+       CLEAR CART
+    =============================== */
+
+    cart = {};
+
+    saveCart();
+
 }
 
 
 /* =====================================================
-   PROTEIN SELECT CHANGE
+   WHATSAPP CUSTOMER QUERY
 ===================================================== */
 
-proteinWeight.addEventListener(
-    "change",
-    calculateProtein
-);
+function openWhatsAppQuery() {
+
+    const message =
+        "Hello MEATZY Fresh Meat 👋\n\n" +
+        "I have a query regarding your products/order.\n\n" +
+        "Please help me.";
+
+
+    const whatsappURL =
+        "https://wa.me/" +
+        MEATZY_WHATSAPP +
+        "?text=" +
+        encodeURIComponent(
+            message
+        );
+
+
+    window.open(
+        whatsappURL,
+        "_blank",
+        "noopener,noreferrer"
+    );
+
+}
+
+
+document
+    .getElementById(
+        "whatsappQueryBtn"
+    )
+    .addEventListener(
+        "click",
+        openWhatsAppQuery
+    );
 
 
 /* =====================================================
-   ORDER PROTEIN CHICKEN
+   HERO WHATSAPP
 ===================================================== */
 
 document
     .getElementById(
-        "proteinOrderBtn"
+        "heroWhatsappBtn"
     )
     .addEventListener(
         "click",
-        () => {
-
-            const grams =
-                Number(
-                    proteinWeight.value
-                );
+        openWhatsAppQuery
+    );
 
 
-            /*
-                Chicken Breast
-                product ID = 3
-            */
+/* =====================================================
+   CONTACT WHATSAPP
+===================================================== */
 
-            const product =
-                products.find(
-                    p =>
-                        p.name ===
-                        "Chicken Breast"
-                );
+document
+    .getElementById(
+        "contactWhatsappBtn"
+    )
+    .addEventListener(
+        "click",
+        openWhatsAppQuery
+    );
 
 
-            if (!product) {
-                return;
+/* =====================================================
+   WHATSAPP ORDER
+===================================================== */
+
+function shareOrderOnWhatsApp(order) {
+
+    if (!order || !order.orderNumber) {
+
+        console.error("Invalid order.");
+        return;
+
+    }
+
+    const lines = [
+
+        "MEATZY FRESH MEAT",
+
+        "====================",
+
+        `Order Number: ${order.orderNumber}`,
+
+        `Order Date: ${order.orderDateText}`,
+
+        "",
+
+        "CUSTOMER DETAILS",
+
+        `Name: ${order.customer.name}`,
+
+        `Mobile: ${order.customer.phone}`,
+
+        `Address: ${order.customer.address}`,
+
+        `Delivery: ${order.deliverySlot}`,
+
+        "",
+
+        "ORDER ITEMS",
+
+        "====================",
+
+        ...order.items.map(item => {
+
+            let quantityText;
+
+            if (item.category.includes("Eggs")) {
+
+                quantityText = `${item.quantity} eggs`;
+
+            } else if (item.quantity === 1000) {
+
+                quantityText = "1 kg";
+
+            } else {
+
+                quantityText = `${item.quantity} grams`;
+
             }
 
+            return `${item.productName} - ${quantityText} × ${item.count} = ₹${item.total}`;
 
-            const cartKey =
-                `${product.id}-${grams}`;
+        }),
+
+        "",
+
+        "====================",
+
+        `Subtotal: ₹${order.subtotal}`,
+
+        `Delivery: ₹${order.deliveryCharge}`,
+
+        `TOTAL: ₹${order.total}`,
+
+        "",
+
+        `Payment: ${order.paymentMethod}`,
+
+        `Payment Status: ${order.paymentStatus}`,
+
+        "",
+
+        "Thank you for ordering from MEATZY Fresh Meat."
+
+    ];
 
 
-            if (!cart[cartKey]) {
+    if (order.location) {
 
-                cart[cartKey] = {
-                    productId: product.id,
-                    quantity: grams,
-                    count: 0
-                };
+        lines.push(
+            "",
+            "CUSTOMER LOCATION",
+            `https://www.google.com/maps?q=${order.location.latitude},${order.location.longitude}`
+        );
 
-            }
-
-
-            cart[cartKey].count++;
+    }
 
 
-            saveCart();
+    const message = lines.join("\n");
 
-            openCart();
+    const whatsappURL =
+        "https://wa.me/" +
+        MEATZY_WHATSAPP +
+        "?text=" +
+        encodeURIComponent(message);
 
-        }
+
+    window.open(
+        whatsappURL,
+        "_blank",
+        "noopener,noreferrer"
+    );
+
+}
+
+
+/* =====================================================
+   FLOATING WHATSAPP
+===================================================== */
+
+document
+    .getElementById(
+        "whatsappFloatingBtn"
+    )
+    .addEventListener(
+        "click",
+        openWhatsAppQuery
     );
 
 
@@ -1164,7 +1993,9 @@ document
 ===================================================== */
 
 document
-    .getElementById("year")
+    .getElementById(
+        "year"
+    )
     .textContent =
         new Date().getFullYear();
 
@@ -1177,4 +2008,3 @@ render();
 
 renderCart();
 
-calculateProtein();
